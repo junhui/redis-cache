@@ -15,6 +15,8 @@
  */
 package org.mybatis.caches.redis;
 
+import java.util.Hashtable;
+
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
 
@@ -27,6 +29,9 @@ public class RedisConfig extends JedisPoolConfig {
 	private String password;
 	private int database = Protocol.DEFAULT_DATABASE;
 	private String clientName;
+	
+	private Hashtable<String, Integer> settings = new Hashtable<String, Integer>();
+	
 
 	public String getHost() {
 		return host;
@@ -91,6 +96,10 @@ public class RedisConfig extends JedisPoolConfig {
 
 	public void setSoTimeout(int soTimeout) {
 		this.soTimeout = soTimeout;
+	}
+
+	public Hashtable<String, Integer> getSettings() {
+		return settings;
 	}
 
 }

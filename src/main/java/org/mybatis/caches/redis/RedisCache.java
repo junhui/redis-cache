@@ -33,6 +33,7 @@ public final class RedisCache implements Cache {
   private final ReadWriteLock readWriteLock = new DummyReadWriteLock();
 
   private String id;
+  private Integer expireSeconds;
 
   private static JedisPool pool;
 
@@ -45,6 +46,8 @@ public final class RedisCache implements Cache {
 	pool = new JedisPool(redisConfig, redisConfig.getHost(), redisConfig.getPort(),
 			redisConfig.getConnectionTimeout(), redisConfig.getSoTimeout(), redisConfig.getPassword(),
 			redisConfig.getDatabase(), redisConfig.getClientName());
+	
+	expireSeconds = redisConfig.getSettings().getOrDefault(id, 10)*60;
   }
 
   private Object execute(RedisCallback callback) {
@@ -66,8 +69,7 @@ public final class RedisCache implements Cache {
     return (Integer) execute(new RedisCallback() {
       @Override
       public Object doWithRedis(Jedis jedis) {
-        Map<byte[], byte[]> result = jedis.hgetAll(id.toString().getBytes());
-        return result.size();
+        throw new UnsupportedOperationException("not support redis-cache getsize method.");
       }
     });
   }
@@ -77,7 +79,9 @@ public final class RedisCache implements Cache {
     execute(new RedisCallback() {
       @Override
       public Object doWithRedis(Jedis jedis) {
-        jedis.hset(id.toString().getBytes(), key.toString().getBytes(), SerializeUtil.serialize(value));
+    	jedis.set(key.toString().getBytes(),SerializeUtil.serialize(value));
+    	jedis.expire(key.toString().getBytes(), expireSeconds);
+        //jedis.hset(id.toString().getBytes(), key.toString().getBytes(), SerializeUtil.serialize(value));
         return null;
       }
     });
@@ -88,7 +92,8 @@ public final class RedisCache implements Cache {
     return execute(new RedisCallback() {
       @Override
       public Object doWithRedis(Jedis jedis) {
-        return SerializeUtil.unserialize(jedis.hget(id.toString().getBytes(), key.toString().getBytes()));
+        //return SerializeUtil.unserialize(jedis.hget(id.toString().getBytes(), key.toString().getBytes()));
+    	  return SerializeUtil.unserialize(jedis.get(key.toString().getBytes()));
       }
     });
   }
@@ -98,7 +103,10 @@ public final class RedisCache implements Cache {
     return execute(new RedisCallback() {
       @Override
       public Object doWithRedis(Jedis jedis) {
-        return jedis.hdel(id.toString(), key.toString());
+//        return jedis.hdel(id.toString(), key.toString());
+    	  //return jedis.del(key.toString());
+
+          throw new UnsupportedOperationException("not support redis-cache getsize method.");
       }
     });
   }
@@ -108,8 +116,10 @@ public final class RedisCache implements Cache {
     execute(new RedisCallback() {
       @Override
       public Object doWithRedis(Jedis jedis) {
-        jedis.del(id.toString());
-        return null;
+        //jedis.del(id.toString());
+
+          throw new UnsupportedOperationException("not support redis-cache getsize method.");
+        //return null;
       }
     });
 
